@@ -1,0 +1,5 @@
+transaction_id, date, type, pricePerUnit, amount, product_id
+0, 00/00/0000, Buying, 80, 900, 1
+1, 00/00/0000, Buying, 80, 900, 1
+2, 00/00/0000, Buying, 80, 900, 1
+3, 00/00/0000, Buying, 80, 900, 1
