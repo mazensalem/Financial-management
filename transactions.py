@@ -234,7 +234,10 @@ def filter(transactions_window):
 
 columnvardatas = "---------"
 sortvardata = "---------"
+sorted = False
 def sort(transactions_window):
+    global sorted
+    sorted = True
     def sortdata(*args):
         global data
         global columnvardatas
@@ -245,12 +248,12 @@ def sort(transactions_window):
         if sortvar.get() == "ASC":
             for i in range(len(data)-1):
                 for j in range(i, len(data)-1):
-                    if data[i+1][columnmap[columnvar.get()]] > data[j+1][columnmap[columnvar.get()]]:
+                    if float(data[i+1][columnmap[columnvar.get()]]) > float(data[j+1][columnmap[columnvar.get()]]):
                         data[i+1], data[j+1] = data[j+1], data[i+1]
         else:
             for i in range(len(data)-1):
                 for j in range(i, len(data)-1):
-                    if data[i+1][columnmap[columnvar.get()]] < data[j+1][columnmap[columnvar.get()]]:
+                    if float(data[i+1][columnmap[columnvar.get()]]) < float(data[j+1][columnmap[columnvar.get()]]):
                         data[i+1], data[j+1] = data[j+1], data[i+1]
 
         transactions_window.destroy()
@@ -264,7 +267,7 @@ def sort(transactions_window):
     sortfram = tk.Frame(transactions_window)
     sortfram.grid(row=0, column=6, columnspan=3)
 
-    columnsort = tk.OptionMenu(sortfram,columnvar, "transaction_id", "date", "type", "total_price", "amount", "product_id", "tax", "discount")
+    columnsort = tk.OptionMenu(sortfram,columnvar, "transaction_id", "total_price", "amount")
     columnsort.grid(row=0, column=1)
     sortchose = tk.OptionMenu(sortfram, sortvar, "ASC", "DEC")
     sortvar.trace_add("write", sortdata)
@@ -276,6 +279,12 @@ def sort(transactions_window):
 data = get_transactions()
 def view_transaction():
     global data
+    global sorted
+    if not sorted:
+        data = get_transactions()
+    else:
+        sorted = False
+        print(data)
     transactions_window = tk.Toplevel()
     height = len(data)
     width = len(data[0])
@@ -296,8 +305,7 @@ def view_transaction():
 
             b.grid(row=i+starti, column=j)
         if i != 0:
-            transaction = {"transaction_id": data[i][0], "date": data[i][1], "type": data[i][2], "total_price": data[i][3], "amount": data[i][4], "product_id": data[i][5] + " " + get_name(data[i][5]), "tax": data[i][6],"discount": data[i][7] }
-            editbutton = tk.Button(transactions_window, text="edit", command=lambda i=i: (create_edit_window(transactions_window, transaction)))
+            editbutton = tk.Button(transactions_window, text="edit", command=lambda i=i: (create_edit_window(transactions_window, {"transaction_id": data[i][0], "date": data[i][1], "type": data[i][2], "total_price": data[i][3], "amount": data[i][4], "product_id": data[i][5] + " " + get_name(data[i][5]), "tax": data[i][6],"discount": data[i][7] })))
             editbutton.grid(row=i+starti, column=j+1)
             deletbutton = tk.Button(transactions_window, text="delete", command=lambda i=i: (delete_transaction(data[i][0], transactions_window), transactions_window.destroy()))
             deletbutton.grid(row=i+starti, column=j+2)
