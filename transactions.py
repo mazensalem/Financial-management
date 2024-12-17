@@ -39,6 +39,7 @@ def update_transaction(data):
     file.close()
 
 def delete_transaction(id, transactions_window):
+    global data
     res = tkinter.messagebox.askquestion("Warning", "are you sure you want to delete", parent=transactions_window, default="no")
     data = get_transactions()
     if res == "yes":
@@ -52,6 +53,8 @@ def delete_transaction(id, transactions_window):
     file.write(data)
     file.close()
 
+    data = get_transactions()
+
     view_transaction()
 
 def create_edit_window(transactions_window, idata={"transaction_id":-1, "total_price":0, "amount": 0, "tax": 0, "discount": 0, "type": "buying", "product_id": -1}):
@@ -62,7 +65,7 @@ def create_edit_window(transactions_window, idata={"transaction_id":-1, "total_p
     discountvar = tk.StringVar(value=idata["discount"])
     typevar = tk.StringVar(value=(idata["type"]))
     productvar = tk.StringVar(value=("---------" if idata["product_id"] == -1 else idata["product_id"]))
-    data = deepcopy(idata)
+    datac = deepcopy(idata)
 
     create_window = tk.Toplevel()
 
@@ -90,40 +93,42 @@ def create_edit_window(transactions_window, idata={"transaction_id":-1, "total_p
         return product_names
     
     def setdata(root):
-        data["date"] = strftime("%d/%m/%Y", gmtime())
-        data["type"] = typevar.get()
-        data["total_price"] = float(pricevar.get())
+        datac["date"] = strftime("%d/%m/%Y", gmtime())
+        datac["type"] = typevar.get()
+        datac["total_price"] = float(pricevar.get())
         try:
             if int(amountvar.get()) == 0:
                 tkinter.messagebox.showerror("Error", "Make sure that you enter a non-zero number for the amount", parent=create_window)
                 return
             
-            data["amount"] = int(amountvar.get())
+            datac["amount"] = int(amountvar.get())
         except:
             tkinter.messagebox.showerror("Error", "Make sure that you entered only whole numbers for the amount", parent=create_window)
             return
         
         try:
-            data["product_id"] = int(productvar.get().split(" ")[0])
+            datac["product_id"] = int(productvar.get().split(" ")[0])
         except:
             tkinter.messagebox.showerror("Error", "Make sure that you choose an option for the product", parent=create_window)
             return
         
         try:
-            data["tax"] = float(taxvar.get())/100
+            datac["tax"] = float(taxvar.get())/100
         except:
             tkinter.messagebox.showerror("Error", "Make sure that you entered only dicimal numbers for the tax", parent=create_window)
             return
         
         try:
-            data["discount"] = float(discountvar.get())/100
+            datac["discount"] = float(discountvar.get())/100
         except:
             tkinter.messagebox.showerror("Error", "Make sure that you entered only dicimal numbers for the discount", parent=create_window)
             return
         
-        update_transaction(data)
+        update_transaction(datac)
         root.destroy()
         transactions_window.destroy()
+        global data
+        data = get_transactions()
         view_transaction()
 
 
@@ -284,7 +289,7 @@ def view_transaction():
         data = get_transactions()
     else:
         sorted = False
-        print(data)
+
     transactions_window = tk.Toplevel()
     height = len(data)
     width = len(data[0])
