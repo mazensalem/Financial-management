@@ -2,3 +2,4 @@ transaction_id, date, type, total_price, amount, product_id, tax, discount
 0,25/12/2024,buying,10000.0,100,0,0.0,0.0
 1,25/12/2024,selling,1600.0,20,0,0.0,0.0
 2,25/12/2024,selling,4000.0,50,0,0.0,0.0
+3,25/12/2024,buying,2500.0,50,3,0.0,0.0

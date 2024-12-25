@@ -48,12 +48,12 @@ def generate_report_view(start, end, select_date_window):
     Lprofit = tk.Label(report_window, text=f"the total profit you achieved was {total_gained - total_spend}")
     Lgained = tk.Label(report_window, text=f"the total revenue you achieved was {total_gained}")
     Lspend = tk.Label(report_window, text=f"the total spending you achieved was {total_spend}")
-    # Bexp = tk.Button(report_window, text="export to pdf", command=lambda : savepdf(str(start), str(end), total_gained, total_spend, count_transaction))
+    Bexp = tk.Button(report_window, text="export to pdf", command=lambda : savepdf(str(start), str(end), total_gained, total_spend, count_transaction, report_window))
     Ldate.grid(row=0)
     Lprofit.grid(row=1)
     Lgained.grid(row=2)
     Lspend.grid(row=3)
-    # Bexp.grid(row=4)
+    Bexp.grid(row=4)
 
     
     report_window.mainloop()

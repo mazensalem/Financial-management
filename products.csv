@@ -1,3 +1,4 @@
 product_id, name, quantity, price_buying, price_selling
 0, t-shirt,40, 100, 80
 1, jeans,10, 70, 100
+3,shoes,50,50,100
