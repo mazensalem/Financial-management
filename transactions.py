@@ -1,7 +1,7 @@
 import tkinter as tk
 import tkinter.messagebox
 from time import gmtime, strftime
-from products import get_products, get_price, get_name
+from products import get_products, get_price, get_name, add_products, remove_products, get_balance
 from copy import deepcopy
 
 def is_float(i):
@@ -18,10 +18,9 @@ def get_transactions():
     data = [i.strip().split(",") for i in data]
     return data
 
-def update_transaction(data):
+def update_transaction(data, window):
     alldata = get_transactions()
     data = [str(data["transaction_id"]), str(data["date"]), str(data["type"]), str(data["total_price"]), str(data["amount"]), str(data["product_id"]), str(data["tax"]), str(data["discount"])]
-    file = open("transactions.csv", "w")
     if data[0] == '-1':
         maxid = 0
         for row in alldata:
@@ -29,12 +28,23 @@ def update_transaction(data):
                 maxid = int(row[0])+1
         data[0] = str(maxid)
         alldata.append(data)
+        if data[2] == "selling":
+            if not remove_products(data[5], data[4]):
+                tkinter.messagebox.showerror("Error", "Make sure you have enought amount of that product", parent=window)
+                return "error"
+        else:
+            if not add_products(data[5], data[4]):
+                tkinter.messagebox.showerror("Error", "Make sure you have enought balance", parent=window)
+                return "error"
     else:
         for i in range(len(alldata)):
             if alldata[i][0] == data[0]:
+                remove_products(alldata[i][5], alldata[i][4], False)
+                add_products(alldata[i][5], data[4], False)
                 alldata[i] = data
 
     alldata = "\n".join([",".join(row) for row in alldata])
+    file = open("transactions.csv", "w")
     file.write(alldata)
     file.close()
 
@@ -45,7 +55,14 @@ def delete_transaction(id, transactions_window):
     if res == "yes":
         for i in range(len(data)):
             if data[i][0] == id:
-                del data[i]
+                if data[i][2] == "buying":
+                    if remove_products(data[i][5], data[i][4], False):
+                        del data[i]
+                    else:
+                        tkinter.messagebox.showerror("Error", "This would make the amount negative", parent=transactions_window)
+                else:
+                    add_products(data[i][5], data[i][4], False)
+                    del data[i]
                 break
     
     file = open("transactions.csv", "w")
@@ -124,12 +141,13 @@ def create_edit_window(transactions_window, idata={"transaction_id":-1, "total_p
             tkinter.messagebox.showerror("Error", "Make sure that you entered only dicimal numbers for the discount", parent=create_window)
             return
         
-        update_transaction(datac)
-        root.destroy()
-        transactions_window.destroy()
-        global data
-        data = get_transactions()
-        view_transaction()
+        if update_transaction(datac, root) != "error":
+            root.destroy()
+            global data
+            data = get_transactions()
+            if transactions_window:
+                transactions_window.destroy()
+                view_transaction()
 
 
     
@@ -222,7 +240,7 @@ def filter(transactions_window):
     valuevar = tk.StringVar(value=valuevardata)
 
     filterfram = tk.Frame(transactions_window)
-    filterfram.grid(row=0, column=1, columnspan=4)
+    filterfram.grid(row=1, column=1, columnspan=4)
 
     columnfilter = tk.OptionMenu(filterfram,columnvar, "transaction_id", "total_price", "amount")
     columnfilter.grid(row=0, column=1)
@@ -242,11 +260,12 @@ sortvardata = "---------"
 sorted = False
 def sort(transactions_window):
     global sorted
-    sorted = True
     def sortdata(*args):
         global data
+        global sorted
         global columnvardatas
         global sortvardata
+        sorted = True
         columnvardatas = columnvar.get()
         sortvardata = sortvar.get()
         columnmap = {"transaction_id": 0, "date": 1, "type": 2, "total_price": 3, "amount": 4, "product_id": 5, "tax": 6, "discount": 7}
@@ -270,7 +289,7 @@ def sort(transactions_window):
 
 
     sortfram = tk.Frame(transactions_window)
-    sortfram.grid(row=0, column=6, columnspan=3)
+    sortfram.grid(row=1, column=6, columnspan=3)
 
     columnsort = tk.OptionMenu(sortfram,columnvar, "transaction_id", "total_price", "amount")
     columnsort.grid(row=0, column=1)
@@ -295,11 +314,13 @@ def view_transaction():
     width = len(data[0])
     
     createbutton = tk.Button(transactions_window, text="create", command=lambda:create_edit_window(transactions_window))
-    createbutton.grid(row=0, column=0)
+    createbutton.grid(row=1, column=0)
     filter(transactions_window)
     sort(transactions_window)
 
-    starti = 1;
+    starti = 2;
+    balance_label = tk.Label(transactions_window, text=f"balance:  {get_balance()[1] + get_balance()[1]}", justify="center")
+    balance_label.grid(row=0, columnspan=8)
     for i in range(height):
         for j in range(width):
             b = tk.Label(transactions_window, text=data[i][j], anchor="nw", width=10, padx=10, pady= 2, bd=.5, relief="solid" )
